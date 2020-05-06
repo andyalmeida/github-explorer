@@ -1,56 +1,67 @@
-import React from 'react';
+import React, { useState, FormEvent } from 'react';
 import { FiChevronRight } from 'react-icons/fi';
+
+import api from '../../services/api';
 
 import logo from '../../assets/logo.svg';
 import { Title, Form, Repositories } from './styles';
 
-const Dashboard: React.FC = () => (
-  <>
-    <img src={logo} alt="Github Explorer" />
-    <Title>Explore repositórios no Github.</Title>
+interface Repository {
+  full_name: string;
+  description: string;
+  owner: {
+    login: string;
+    avatar_url: string;
+  };
+}
 
-    <Form>
-      <input placeholder="Digite o repositório" />
-      <button type="submit">Pesquisar</button>
-    </Form>
+const Dashboard: React.FC = () => {
+  const [newRepo, setNewRepo] = useState('');
+  const [repositories, setRepositories] = useState<Repository[]>([]);
 
-    <Repositories>
-      <a href="repository">
-        <img
-          src="https://avatars2.githubusercontent.com/u/1422971?s=120&v=4"
-          alt="André Almeida"
+  async function handleAddRepository(
+    event: FormEvent<HTMLFormElement>,
+  ): Promise<void> {
+    event.preventDefault();
+
+    const response = await api.get<Repository>(`repos/${newRepo}`);
+
+    const repository = response.data;
+
+    setRepositories([...repositories, repository]);
+    setNewRepo('');
+  }
+
+  return (
+    <>
+      <img src={logo} alt="Github Explorer" />
+      <Title>Explore repositórios no Github.</Title>
+
+      <Form onSubmit={handleAddRepository}>
+        <input
+          placeholder="Digite o repositório"
+          onChange={e => setNewRepo(e.target.value)}
+          value={newRepo}
         />
-        <div>
-          <strong>github-explorer</strong>
-          <p>Explorador do github</p>
-        </div>
-        <FiChevronRight size={20} />
-      </a>
+        <button type="submit">Pesquisar</button>
+      </Form>
 
-      <a href="repository">
-        <img
-          src="https://avatars2.githubusercontent.com/u/1422971?s=120&v=4"
-          alt="André Almeida"
-        />
-        <div>
-          <strong>github-explorer</strong>
-          <p>Explorador do github</p>
-        </div>
-        <FiChevronRight size={20} />
-      </a>
-
-      <a href="repository">
-        <img
-          src="https://avatars2.githubusercontent.com/u/1422971?s=120&v=4"
-          alt="André Almeida"
-        />
-        <div>
-          <strong>github-explorer</strong>
-          <p>Explorador do github</p>
-        </div>
-        <FiChevronRight size={20} />
-      </a>
-    </Repositories>
-  </>
-);
+      <Repositories>
+        {repositories.map(repository => (
+          <a key={repository.full_name} href="repository">
+            <img
+              src={repository.owner.avatar_url}
+              alt={repository.owner.login}
+            />
+            <div>
+              <strong>{repository.full_name}</strong>
+              <p>{repository.description}</p>
+            </div>
+            <FiChevronRight size={20} />
+          </a>
+        ))}
+      </Repositories>
+    </>
+  );
+};
 export default Dashboard;

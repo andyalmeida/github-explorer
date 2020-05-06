@@ -76,21 +76,25 @@ export const Repositories = styled.div`
       width: 84px;
       height: 84px;
       border-radius: 50%;
-      margin-right: 24px;
     }
 
-    strong {
-      font-weight: bold;
-      font-size: 24px;
-      line-height: 28px;
-      color: #3d3d4d;
-    }
+    div {
+      flex: 1;
+      margin: 0 24px;
 
-    p {
-      font-size: 18px;
-      line-height: 21px;
-      color: #a8a8b3;
-      margin-top: 4px;
+      strong {
+        font-weight: bold;
+        font-size: 24px;
+        line-height: 28px;
+        color: #3d3d4d;
+      }
+
+      p {
+        font-size: 18px;
+        line-height: 21px;
+        color: #a8a8b3;
+        margin-top: 4px;
+      }
     }
 
     svg {
