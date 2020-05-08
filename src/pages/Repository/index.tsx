@@ -1,12 +1,48 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import { useParams, Link } from 'react-router-dom';
+
+import api from '../../services/api';
 
 import logo from '../../assets/logo.svg';
 import { Header, RepositoryInfo, Issues } from './styles';
 
+interface Repository {
+  full_name: string;
+  description: string;
+  stargazers_count: number;
+  forks_count: number;
+  open_issues_count: number;
+  owner: {
+    login: string;
+    avatar_url: string;
+  };
+}
+
+interface Issue {
+  id: number;
+  title: string;
+  html_url: string;
+  user: {
+    login: string;
+  };
+}
+
 const Repository: React.FC = () => {
+  const [repo, setRepo] = useState<Repository | null>(null);
+  const [issues, setIssues] = useState<Issue[]>([]);
   const { repository } = useParams();
+
+  useEffect(() => {
+    api.get(`repos/${repository}`).then(response => {
+      setRepo(response.data);
+    });
+
+    api.get(`repos/${repository}/issues`).then(response => {
+      setIssues(response.data);
+    });
+  }, [repository]);
+
   return (
     <>
       <Header>
@@ -17,70 +53,48 @@ const Repository: React.FC = () => {
         </Link>
       </Header>
 
-      <RepositoryInfo>
-        <header>
-          <img
-            src="https://avatars0.githubusercontent.com/u/1422971?s=460&u=69206c9e8b7938cf9671402d2687c464a611449f&v=4"
-            alt="André Almeida"
-          />
-          <div>
-            <strong>André Almeida</strong>
-            <p>Meu repositório</p>
-          </div>
-        </header>
+      {repo && (
+        <RepositoryInfo>
+          <header>
+            <img src={repo.owner.avatar_url} alt={repo.owner.login} />
+            <div>
+              <strong>{repo.full_name}</strong>
+              <p>{repo.description}</p>
+            </div>
+          </header>
 
-        <ul>
-          <li>
-            <strong>1808</strong>
-            <span>Stars</span>
-          </li>
-          <li>
-            <strong>48</strong>
-            <span>Forks</span>
-          </li>
-          <li>
-            <strong>67</strong>
-            <span>Issues abertas</span>
-          </li>
-        </ul>
-      </RepositoryInfo>
+          <ul>
+            <li>
+              <strong>{repo.stargazers_count}</strong>
+              <span>Stars</span>
+            </li>
+            <li>
+              <strong>{repo.forks_count}</strong>
+              <span>Forks</span>
+            </li>
+            <li>
+              <strong>{repo.open_issues_count}</strong>
+              <span>Issues abertas</span>
+            </li>
+          </ul>
+        </RepositoryInfo>
+      )}
 
       <Issues>
-        <a
-          href="https://github.com/andyalmeida/github-explorer"
-          rel="noopener noreferrer"
-          target="_blank"
-        >
-          <div>
-            <strong>Issue #001</strong>
-            <p>André Almeida</p>
-          </div>
-          <FiChevronRight size={20} />
-        </a>
-
-        <a
-          href="https://github.com/andyalmeida/github-explorer"
-          rel="noopener noreferrer"
-          target="_blank"
-        >
-          <div>
-            <strong>Issue #001</strong>
-            <p>André Almeida</p>
-          </div>
-          <FiChevronRight size={20} />
-        </a>
-
-        <a
-          href="https://github.com/andyalmeida/github-explorer"
-          rel="noopener noreferrer"
-          target="_blank"
-        >
-          <div>
-            <strong>Issue #001</strong>
-            <p>André Almeida</p>
-          </div>
-          <FiChevronRight size={20} />
-        </a>
+        {issues.map(issue => (
+          <a
+            key={issue.id}
+            href={issue.html_url}
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            <div>
+              <strong>{issue.title}</strong>
+              <p>{issue.user.login}</p>
+            </div>
+            <FiChevronRight size={20} />
+          </a>
+        ))}
       </Issues>
     </>
   );
